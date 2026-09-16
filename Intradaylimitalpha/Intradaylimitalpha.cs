@@ -1,100 +1,141 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using cAlgo.API;
 
 namespace cAlgo.Robots;
 
 [Robot(TimeZone = TimeZones.TokyoStandardTime, AccessRights = AccessRights.FullAccess, AddIndicators = false)]
 public class Intradaylimitalpha : Robot {
-    [Parameter("空1风险%", DefaultValue = 0, MinValue = 0, Group = "空1")]
+        [Parameter("订单标签", DefaultValue = "ManuallyTrade-label")]
+    public string OrderLabel { get; set; }
+
+
+    [Parameter("空1风险1%", DefaultValue = 1, MinValue = 0, Group = "空1")]
     public double Short1RiskPct { get; set; }
 
     [Parameter("空1入场价", DefaultValue = 0, MinValue = 0, Group = "空1")]
-    public double Short1Price { get; set; }
+    public double PDH1 { get; set; }
 
-    [Parameter("空1止盈价", DefaultValue = 0, MinValue = 0, Group = "空1")]
+    [Parameter("空1止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "空1")]
     public double Short1TPPrice { get; set; }
-
-    [Parameter("空1止损价", DefaultValue = 0, MinValue = 0, Group = "空1")]
-    public double Short1SLPrice { get; set; }
 
     [Parameter("空2风险%", DefaultValue = 0, MinValue = 0, Group = "空2")]
     public double Short2RiskPct { get; set; }
 
     [Parameter("空2入场价", DefaultValue = 0, MinValue = 0, Group = "空2")]
-    public double Short2Price { get; set; }
+    public double PDH2 { get; set; }
 
-    [Parameter("空2止盈价", DefaultValue = 0, MinValue = 0, Group = "空2")]
+    [Parameter("空2止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "空2")]
     public double Short2TPPrice { get; set; }
-
-    [Parameter("空2止损价", DefaultValue = 0, MinValue = 0, Group = "空2")]
-    public double Short2SLPrice { get; set; }
 
     [Parameter("空3风险%", DefaultValue = 0, MinValue = 0, Group = "空3")]
     public double Short3RiskPct { get; set; }
 
     [Parameter("空3入场价", DefaultValue = 0, MinValue = 0, Group = "空3")]
-    public double Short3Price { get; set; }
+    public double PDH3 { get; set; }
 
-    [Parameter("空3止盈价", DefaultValue = 0, MinValue = 0, Group = "空3")]
+    [Parameter("空3止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "空3")]
     public double Short3TPPrice { get; set; }
 
-    [Parameter("空3止损价", DefaultValue = 0, MinValue = 0, Group = "空3")]
-    public double Short3SLPrice { get; set; }
 
     [Parameter("多1风险%", DefaultValue = 0, MinValue = 0, Group = "多1")]
     public double Long1RiskPct { get; set; }
 
     [Parameter("多1入场价", DefaultValue = 0, MinValue = 0, Group = "多1")]
-    public double Long1Price { get; set; }
+    public double PDL1 { get; set; }
 
-    [Parameter("多1止盈价", DefaultValue = 0, MinValue = 0, Group = "多1")]
+    [Parameter("多1止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "多1")]
     public double Long1TPPrice { get; set; }
 
-    [Parameter("多1止损价", DefaultValue = 0, MinValue = 0, Group = "多1")]
-    public double Long1SLPrice { get; set; }
 
     [Parameter("多2风险%", DefaultValue = 0, MinValue = 0, Group = "多2")]
     public double Long2RiskPct { get; set; }
 
     [Parameter("多2入场价", DefaultValue = 0, MinValue = 0, Group = "多2")]
-    public double Long2Price { get; set; }
+    public double PDL2 { get; set; }
 
-    [Parameter("多2止盈价", DefaultValue = 0, MinValue = 0, Group = "多2")]
+    [Parameter("多2止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "多2")]
     public double Long2TPPrice { get; set; }
 
-    [Parameter("多2止损价", DefaultValue = 0, MinValue = 0, Group = "多2")]
-    public double Long2SLPrice { get; set; }
 
     [Parameter("多3风险%", DefaultValue = 0, MinValue = 0, Group = "多3")]
     public double Long3RiskPct { get; set; }
 
     [Parameter("多3入场价", DefaultValue = 0, MinValue = 0, Group = "多3")]
-    public double Long3Price { get; set; }
+    public double PDL3 { get; set; }
 
-    [Parameter("多3止盈价", DefaultValue = 0, MinValue = 0, Group = "多3")]
+    [Parameter("多3止盈目标", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 20.0, Step = 0.1, Group = "多3")]
     public double Long3TPPrice { get; set; }
 
-    [Parameter("多3止损价", DefaultValue = 0, MinValue = 0, Group = "多3")]
-    public double Long3SLPrice { get; set; }
+    [Parameter("启动时清空交易记录CSV", DefaultValue = false, Group = "开发调试")]
+    public bool ResetTradeLogOnStart { get; set; }
 
     [Parameter("debug调试", DefaultValue = false, Group = "开发调试")]
     public bool IsDebug { get; set; }
 
+    [Parameter("输出文件名", DefaultValue = "ManuallyTrades.csv", Group = "开发调试")]
+    public string FileName { get; set; }
+
+    private PdhpdlLines _pdhpdlLines;
+    private PdhpdlSignalDetector _signalDetector;
+    private PdhpdlSignalMarkers _signalMarkers;
+    private PdhpdlOrderExecutor _orderExecutor;
+    private PdhpdlTradeCsvLogger _csvLogger;
+
     protected override void OnStart() {
-        LaunchDebug();
-
-        var orderExecutor = new PdhpdlOrderExecutor(this, new PdhpdlOrderPlanner(new CAlgoSymbolModel(Symbol)));
-
-        foreach (PendingOrderRequestModel request in BuildOrderRequests()) {
-            // Entry and take-profit both set means the slot is in use. A missing stop-loss or risk
-            // percentage is rejected by the planner with a logged reason rather than silently skipped.
-            if (request.EntryPrice <= 0.0 || request.TakeProfitPrice <= 0.0)
-                continue;
-
-            orderExecutor.PlacePendingOrder(request);
+        // A blank label would make every "_L"/"_S" label on the symbol look like this bot's order.
+        if (string.IsNullOrWhiteSpace(OrderLabel)) {
+            Print("*****OrderLabel must not be empty. cBot stopped.");
+            Stop();
+            return;
         }
 
-        Print("*****MovingAverageV1 started.");
+        LaunchDebug();
+
+        List<TradeLevelModel> tradeLevels = BuildTradeLevels();
+        PrintConfiguredLevels(tradeLevels);
+
+        _signalDetector = new PdhpdlSignalDetector(Bars, tradeLevels);
+        _signalMarkers = new PdhpdlSignalMarkers(Chart, Symbol.TickSize);
+
+        _csvLogger = new PdhpdlTradeCsvLogger(ResetTradeLogOnStart, ResolveReportsDirectory(), FileName);
+        Print("****CSV logger path: {0}", _csvLogger.FilePath);
+
+        var riskGuard = new PdhpdlRiskGuard();
+        var planner = new PdhpdlOrderPlanner(new CAlgoSymbolModel(Symbol), riskGuard);
+        _orderExecutor = new PdhpdlOrderExecutor(this, SymbolName, Bars.TimeFrame.ToString(), OrderLabel.Trim(), planner, riskGuard,
+            _csvLogger);
+
+        _pdhpdlLines = new PdhpdlLines(Chart, tradeLevels);
+        _pdhpdlLines.Draw();
+
+        Print("*****PDH/PDL Break and Reverse started.");
+    }
+
+    // 手工输入的六档价位。价格或风险百分比留 0 的那一档不参与判断（见 TradeLevelModel）。
+    private List<TradeLevelModel> BuildTradeLevels() {
+        return new List<TradeLevelModel> {
+            new("Short1", SignalSideModel.Sell, PDH1, Short1RiskPct, Short1TPPrice),
+            new("Short2", SignalSideModel.Sell, PDH2, Short2RiskPct, Short2TPPrice),
+            new("Short3", SignalSideModel.Sell, PDH3, Short3RiskPct, Short3TPPrice),
+            new("Long1", SignalSideModel.Buy, PDL1, Long1RiskPct, Long1TPPrice),
+            new("Long2", SignalSideModel.Buy, PDL2, Long2RiskPct, Long2TPPrice),
+            new("Long3", SignalSideModel.Buy, PDL3, Long3RiskPct, Long3TPPrice)
+        };
+    }
+
+    // 全都没配置就等于这个 cBot 不会下任何单，启动时说清楚，免得以为是信号没出。
+    private void PrintConfiguredLevels(List<TradeLevelModel> tradeLevels) {
+        foreach (TradeLevelModel level in tradeLevels.Where(level => level.IsConfigured)) {
+            Print("*****Level configured | Name: {0}, Side: {1}, Price: {2}, RiskPct: {3}, TakeProfitR: {4}", level.Name, level.Side,
+                level.Price, level.RiskPct, level.TakeProfitR);
+        }
+
+        if (!tradeLevels.Any(level => level.IsConfigured))
+            Print("*****No trade level configured. Set both 入场价 and 风险% on at least one level, or this cBot will never trade.");
     }
 
     private void LaunchDebug() {
@@ -106,35 +147,38 @@ public class Intradaylimitalpha : Robot {
         }
     }
 
-    // Each slot has its own label, so the executor's duplicate check only blocks a restart from
-    // re-placing that same slot; slots never block each other.
-    private PendingOrderRequestModel[] BuildOrderRequests() {
-        const PdhpdlTradeDirectionModel Short = PdhpdlTradeDirectionModel.Short;
-        const PdhpdlTradeDirectionModel Long = PdhpdlTradeDirectionModel.Long;
-
-        return new[] {
-            OrderRequest(Short, "Intradaylimitalpha_Short1", Short1Price, Short1SLPrice, Short1TPPrice, Short1RiskPct),
-            OrderRequest(Short, "Intradaylimitalpha_Short2", Short2Price, Short2SLPrice, Short2TPPrice, Short2RiskPct),
-            OrderRequest(Short, "Intradaylimitalpha_Short3", Short3Price, Short3SLPrice, Short3TPPrice, Short3RiskPct),
-            OrderRequest(Long, "Intradaylimitalpha_Long1", Long1Price, Long1SLPrice, Long1TPPrice, Long1RiskPct),
-            OrderRequest(Long, "Intradaylimitalpha_Long2", Long2Price, Long2SLPrice, Long2TPPrice, Long2RiskPct),
-            OrderRequest(Long, "Intradaylimitalpha_Long3", Long3Price, Long3SLPrice, Long3TPPrice, Long3RiskPct)
-        };
+    // 输出目录按运行模式分开、互不覆盖：回测目录由脚本每次清空重建，模拟/实盘目录只追加、从不删除。
+    // 回测经 run_conditions 传入绝对路径 FileName，此目录会被忽略（见 PdhpdlTradeCsvLogger）。
+    private string ResolveReportsDirectory() {
+        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        return Path.Combine(documentsPath, ResolveReportsFolderName());
     }
 
-    private static PendingOrderRequestModel OrderRequest(PdhpdlTradeDirectionModel direction, string label, double entryPrice,
-        double stopLossPrice, double takeProfitPrice, double riskPct) {
-        return new PendingOrderRequestModel {
-            Label = label,
-            Direction = direction,
-            EntryPrice = entryPrice,
-            StopLossPrice = stopLossPrice,
-            TakeProfitPrice = takeProfitPrice,
-            RiskPct = riskPct
-        };
+    private string ResolveReportsFolderName() {
+        if (IsBacktesting)
+            return "trading_reports";
+
+        return Account.IsLive ? "release_trading_reports" : "simulate_trading_reports";
+    }
+
+    protected override void OnBar() {
+        _pdhpdlLines?.Draw();
+        HandleClosedBarSignal();
+    }
+
+    // 一根 K 线可能同时命中几档价位，每一档各自下单、各自画标记。
+    private void HandleClosedBarSignal() {
+        foreach (PdhpdlSignalModel signalModel in _signalDetector.DetectOnClosedBar()) {
+            if (_orderExecutor.ExecuteIfSignal(signalModel)) {
+                _signalMarkers.Draw(signalModel);
+            }
+        }
     }
 
     protected override void OnStop() {
         Print("*****cBot stopped.*******************");
     }
+
+    protected override void OnBarClosed() { }
+
 }

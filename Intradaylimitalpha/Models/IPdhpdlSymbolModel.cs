@@ -13,8 +13,8 @@ public interface IPdhpdlSymbolModel {
     // already folds in the USD->EUR conversion, which a raw price distance does not.
     double PipValue { get; }
 
-    // Snap a raw volume down to a tradable step, so the loss at the stop never exceeds the
-    // risk budget.
+    // Snap a raw volume to the nearest tradable step (so sizing lands as close to the
+    // risk budget as the step allows, rather than always rounding down).
     double NormalizeVolumeInUnits(double volumeInUnits);
     double AmountRisked(double volumeInUnits, double stopLossPips);
 }
