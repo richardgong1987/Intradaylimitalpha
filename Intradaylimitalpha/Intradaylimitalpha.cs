@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using cAlgo.API;
 
 namespace cAlgo.Robots;
@@ -64,6 +65,12 @@ public class Intradaylimitalpha : Robot {
             return;
         }
 
+        if (!IsLongGridEnabled)
+            CancelPendingOrders(GridLabel(TradeDirectionModel.Long));
+
+        if (!IsShortGridEnabled)
+            CancelPendingOrders(GridLabel(TradeDirectionModel.Short));
+
         if (!IsLongGridEnabled && !IsShortGridEnabled) {
             Print("*****Neither the long group nor the short group has a start price. cBot stopped.");
             Stop();
@@ -119,6 +126,21 @@ public class Intradaylimitalpha : Robot {
     // count, refill and restart independently even though they share one symbol.
     private string GridLabel(TradeDirectionModel direction) {
         return $"{OrderLabel.Trim()}_{direction}";
+    }
+
+    // Switching a group off (start price 0) withdraws its unfilled orders from an earlier run. Filled
+    // positions are left alone and still close at their own take profit.
+    private void CancelPendingOrders(string label) {
+        List<PendingOrder> ordersToCancel = PendingOrders.Where(order => order.SymbolName == SymbolName && order.Label == label).ToList();
+
+        foreach (PendingOrder order in ordersToCancel) {
+            TradeResult result = CancelPendingOrder(order);
+
+            if (result.IsSuccessful)
+                Print("*****Pending order cancelled | Label: {0}, Price: {1}", label, order.TargetPrice);
+            else
+                Print("*****Pending order cancel failed | Label: {0}, Price: {1}, Error: {2}", label, order.TargetPrice, result.Error);
+        }
     }
 
     private double ToVolumeInUnits(double lots) {

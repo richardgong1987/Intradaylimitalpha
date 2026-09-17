@@ -7,7 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A **cTrader cBot** (automated trading robot) written in C# against the cAlgo API, targeting
 `net6.0`. The strategy runs **two independent take-profit grids** on one symbol — a long group
 and a short group, each with its own parameters and label (`{OrderLabel}_Long` /
-`{OrderLabel}_Short`); a group runs only when its anchor price is above 0. There is no entry signal and no stop loss.
+`{OrderLabel}_Short`); a group runs only when its anchor price is above 0. Starting with a group's anchor price at 0
+cancels that group's leftover pending orders but leaves its filled positions open. There is no
+entry signal and no stop loss.
 Each grid (one `GridOrderExecutor` per enabled group) works like this:
 
 - Entry: every order is a pending order (there is no market entry), spaced from the anchor
