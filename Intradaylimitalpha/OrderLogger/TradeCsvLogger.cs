@@ -7,7 +7,7 @@ using cAlgo.API.Internals;
 
 namespace cAlgo.Robots;
 
-public class PdhpdlTradeCsvLogger {
+public class TradeCsvLogger {
     private static readonly Encoding CsvEncoding = new UTF8Encoding(true);
     private readonly string _filePath;
 
@@ -17,7 +17,7 @@ public class PdhpdlTradeCsvLogger {
     //
     // reportsDirectory: 按运行模式选定的输出目录（回测/模拟/实盘各一个，见组合根）。
     // fileName 传绝对路径时（回测经 run_conditions 指定完整路径）直接采用、忽略 reportsDirectory。
-    public PdhpdlTradeCsvLogger(bool resetOnStart, string reportsDirectory, string fileName) {
+    public TradeCsvLogger(bool resetOnStart, string reportsDirectory, string fileName) {
         _filePath = ResolveFilePath(reportsDirectory, fileName);
         EnsureDirectoryExists(_filePath);
 
@@ -42,24 +42,28 @@ public class PdhpdlTradeCsvLogger {
 
     public string FilePath => _filePath;
 
-    public string AppendEntry(PdhpdlOrderPlanModel planModel, Position position, string symbolName, string timeFrame) {
-        if (planModel == null || position == null)
+    // The grid has no stop loss, so the stop and risk columns stay 0. The header is unchanged so
+    // existing files and report scripts keep reading it: 关键位 holds the grid direction and
+    // 信号 how the order entered (Market / Limit / Stop).
+    public string AppendEntry(Position position, string direction, string orderKind, double entryAccountEquity, string symbolName,
+        string timeFrame) {
+        if (position == null)
             return "";
 
-        var record = new PdhpdlTradeCsvRecordModel {
+        var record = new TradeCsvRecordModel {
             Id = position.Id.ToString(),
-            KeyLevel = planModel.KeyLevel,
-            Signal = planModel.SignalName,
+            KeyLevel = direction,
+            Signal = orderKind,
             Comment = "ENTRY",
             Symbol = symbolName,
             TimeFrame = timeFrame,
-            EntryAccountEquity = planModel.AccountEquity,
+            EntryAccountEquity = entryAccountEquity,
             CloseAccountEquity = 0.0,
             EntryTime = position.EntryTime,
             EntryPrice = position.EntryPrice,
-            StopPrice = position.StopLoss ?? planModel.StopPrice,
-            TakeProfitPrice = planModel.TakeProfitPrice,
-            RiskPrice = Math.Abs(position.EntryPrice - (position.StopLoss ?? planModel.StopPrice)),
+            StopPrice = 0.0,
+            TakeProfitPrice = position.TakeProfit ?? 0.0,
+            RiskPrice = 0.0,
             VolumeInUnits = position.VolumeInUnits,
             PositionId = position.Id.ToString(),
             DealId = GetOpenDealId(position)
@@ -80,7 +84,7 @@ public class PdhpdlTradeCsvLogger {
         if (resolvedEntryAccountEquity <= 0.0 && closeAccountEquity > 0.0)
             resolvedEntryAccountEquity = closeAccountEquity - position.NetProfit;
 
-        var record = new PdhpdlTradeCsvRecordModel {
+        var record = new TradeCsvRecordModel {
             Id = GetCloseRecordId(csvId, reason),
             KeyLevel = "",
             Signal = "close",
@@ -107,7 +111,7 @@ public class PdhpdlTradeCsvLogger {
         return record.Id;
     }
 
-    public void Append(PdhpdlTradeCsvRecordModel recordModel) {
+    public void Append(TradeCsvRecordModel recordModel) {
         if (recordModel == null)
             return;
 
@@ -140,14 +144,14 @@ public class PdhpdlTradeCsvLogger {
             return;
         }
 
-        string[] upgraded = PdhpdlTradeCsvMigrator.Upgrade(lines, header);
+        string[] upgraded = TradeCsvMigrator.Upgrade(lines, header);
 
         if (upgraded != null)
             System.IO.File.WriteAllLines(_filePath, upgraded, CsvEncoding);
     }
 
     private static string BuildHeader() {
-        // "多空" (Side) 字段已废弃，从当前表头中移除。历史文件由 PdhpdlTradeCsvMigrator 升级时会剥离该列。
+        // "多空" (Side) 字段已废弃，从当前表头中移除。历史文件由 TradeCsvMigrator 升级时会剥离该列。
         return string.Join(",", "编号", "关键位", "信号", "备注", "交易品种", "时间周期", "入场时间", "入场价格", "平仓价格", "止损价格", "止盈价格", "风险价格距离", "下单数量", "平仓原因",
             "开仓账户权益", "平仓账户权益", "平仓盈亏", "平仓时间", "持仓ID", "成交ID");
     }

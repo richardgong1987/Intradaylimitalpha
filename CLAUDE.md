@@ -5,28 +5,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A **cTrader cBot** (automated trading robot) written in C# against the cAlgo API, targeting
-`net6.0`. The strategy is **PDH/PDL Break and Reverse**: it detects false breakouts of the
-Previous Day High/Low, sizes an order against a fixed per-trade risk budget, and places it.
-The strategy is implemented; `Intradaylimitalpha.cs` is the Robot lifecycle shell that wires the
-pieces together (the composition root).
+`net6.0`. The strategy is a **one-directional take-profit grid** with no entry signal and no
+stop loss:
+
+- Entry: `Market` opens the first order at the current price, then places pending orders one
+  spacing apart from that fill; `Pending` places every order as a pending order, spaced from
+  the anchor price (or the current price when the anchor is 0). Long grids step downward,
+  short grids step upward. Distances are in pips.
+- Every order has the same lot size and the same take-profit distance.
+- Open positions + pending orders are kept at `N`. When a grid position takes profit, a new
+  pending order is added one spacing **beyond the farthest order** (the grid extends; it
+  does not refill the gap). Manual closes and stop-outs do not refill.
+- On restart, existing orders with the same label are continued (topped up to `N`) instead
+  of building a second grid.
+
+`Intradaylimitalpha.cs` is the Robot lifecycle shell that wires the pieces together (the
+composition root).
 
 ## Module map
 
 Behavior classes live beside the feature they serve; all data types live in `Models/`
 (suffixed `Model`):
 
-- `Orders/` — `PdhpdlOrderPlanner` (pure sizing/geometry, unit tested) talks to the broker
-  only through the `IPdhpdlSymbolModel` port; `PdhpdlOrderExecutor` gates on risk/exposure,
-  submits orders, and cancels stale pending orders.
-- `Risk/` — `PdhpdlRiskGuard` (time/news/weekend windows + risk-money, pure, unit tested).
-- `Models/` — data types: `PdhpdlOrderPlanModel`, `PdhpdlTradeDirectionModel`,
-  `NewsBlackoutWindowModel`, the `IPdhpdlSymbolModel` port, and its `CAlgoSymbolModel`
-  adapter (the one Models/ file that references `cAlgo.API`).
+- `Orders/` — `GridPlanner` (pure price geometry: initial levels, refill price, limit vs
+  stop; unit tested); `GridOrderExecutor` places orders, counts live grid orders, refills on
+  take profit, and writes the CSV.
+- `OrderLogger/` — `TradeCsvLogger` (append-only trade CSV) and `TradeCsvMigrator` (upgrades
+  old CSV headers).
+- `Models/` — data types: `GridSettingsModel`, `EntryModeModel`, `TradeDirectionModel`,
+  `PendingOrderTypeModel`, `TradeCsvRecordModel`.
 
 Rule of thumb: classes with no `using cAlgo.API` are pure and testable; keep them that way.
-`CAlgoSymbolModel` is the sole broker adapter — it is the only Models/ file that touches
-cAlgo, and it is never linked into the test project. The design rationale lives in
-`docs/design/refactor-structure.md`.
 
 ## Build & run
 
@@ -48,7 +57,7 @@ Pure (framework-independent) helpers are unit-tested with xUnit under `tests/`:
 
 ```bash
 ./scripts/test.sh                                       # build cBot + run all tests
-dotnet test "tests/Pdhpdl.Tests/Pdhpdl.Tests.csproj"      # tests only
+dotnet test "tests/Grid.Tests/Grid.Tests.csproj"          # tests only
 ```
 
 The test project is intentionally **not** part of the `.sln` (which cTrader builds) and
