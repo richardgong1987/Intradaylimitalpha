@@ -6,13 +6,13 @@ This is a cTrader cBot project named `Intradaylimitalpha`.
 
 The strategy runs two independent take-profit grids on the same symbol, a long group and a short
 group, each with its own parameters and its own order label (`{OrderLabel}_Long` /
-`{OrderLabel}_Short`). Either group can be disabled. There is no entry signal and no stop-loss
+`{OrderLabel}_Short`). A group runs only when its start price is set (above 0). There is no entry signal and no stop-loss
 calculation. Running both at once needs a hedging account.
 
 Each grid works as follows:
 
 * Entry: every order is a pending order (there is no market entry), spaced from the anchor
-  price (or the current price when the anchor is 0).
+  price.
 * Direction: `Long` grids step downward, `Short` grids step upward. A pending order on the
   favourable side of the market is a limit order, otherwise a stop order.
 * Every order uses the same lot size and the same take-profit distance (pips).
@@ -28,8 +28,7 @@ Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
 
 | Parameter | Meaning | Min |
 | --- | --- | --- |
-| `IsLongGridEnabled` / `IsShortGridEnabled` | Turn the group on or off | |
-| `…AnchorPrice` | Grid start price, 0 = current price | 0 |
+| `…AnchorPrice` | Grid start price; 0 turns the group off | 0 |
 | `…SpacingPips` | Distance between neighbouring grid orders | 100 |
 | `…LotsPerOrder` | Lot size of every order | 0.01 |
 | `…MaxOrders` | N, this group's positions + pending orders | 1 |

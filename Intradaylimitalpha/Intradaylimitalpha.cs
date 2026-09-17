@@ -11,10 +11,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
-    [Parameter("启用多单组", DefaultValue = true, Group = "多单组")]
-    public bool IsLongGridEnabled { get; set; }
-
-    [Parameter("多单挂单起始价 (0=现价)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
+    [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
     public double LongAnchorPrice { get; set; }
 
     [Parameter("多单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组")]
@@ -29,10 +26,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("多单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组")]
     public double LongTakeProfitPips { get; set; }
 
-    [Parameter("启用空单组", DefaultValue = true, Group = "空单组")]
-    public bool IsShortGridEnabled { get; set; }
-
-    [Parameter("空单挂单起始价 (0=现价)", DefaultValue = 0, MinValue = 0, Group = "空单组")]
+    [Parameter("空单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组")]
     public double ShortAnchorPrice { get; set; }
 
     [Parameter("空单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组")]
@@ -58,6 +52,10 @@ public class Intradaylimitalpha : Robot {
 
     private readonly List<GridOrderExecutor> _gridExecutors = new();
 
+    // A group is switched on by giving it a start price; 0 leaves it off.
+    private bool IsLongGridEnabled => LongAnchorPrice > 0.0;
+    private bool IsShortGridEnabled => ShortAnchorPrice > 0.0;
+
     protected override void OnStart() {
         // A blank label would make every unlabelled order on the symbol look like part of a grid.
         if (string.IsNullOrWhiteSpace(OrderLabel)) {
@@ -67,7 +65,7 @@ public class Intradaylimitalpha : Robot {
         }
 
         if (!IsLongGridEnabled && !IsShortGridEnabled) {
-            Print("*****Neither the long group nor the short group is enabled. cBot stopped.");
+            Print("*****Neither the long group nor the short group has a start price. cBot stopped.");
             Stop();
             return;
         }

@@ -48,8 +48,7 @@ public class GridOrderExecutor {
             return;
         }
 
-        PlacePendingOrders(_planner.InitialPendingPrices(_settings.AnchorPrice > 0.0 ? _settings.AnchorPrice : CurrentPrice,
-            _settings.MaxOrders));
+        PlacePendingOrders(_planner.InitialPendingPrices(_settings.AnchorPrice, _settings.MaxOrders));
     }
 
     private void PlacePendingOrders(IEnumerable<double> prices) {
