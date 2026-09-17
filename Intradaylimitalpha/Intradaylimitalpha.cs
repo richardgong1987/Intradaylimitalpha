@@ -12,34 +12,34 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
-    [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
+    [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组1")]
     public double LongAnchorPrice { get; set; }
 
-    [Parameter("多单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组")]
+    [Parameter("多单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组1")]
     public double LongSpacingPips { get; set; }
 
-    [Parameter("多单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组")]
+    [Parameter("多单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组1")]
     public double LongLotsPerOrder { get; set; }
 
-    [Parameter("多单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组")]
+    [Parameter("多单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组1")]
     public int LongMaxOrders { get; set; }
 
-    [Parameter("多单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组")]
+    [Parameter("多单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组1")]
     public double LongTakeProfitPips { get; set; }
 
-    [Parameter("空单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组")]
+    [Parameter("空单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组1")]
     public double ShortAnchorPrice { get; set; }
 
-    [Parameter("空单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组")]
+    [Parameter("空单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组1")]
     public double ShortSpacingPips { get; set; }
 
-    [Parameter("空单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组")]
+    [Parameter("空单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组1")]
     public double ShortLotsPerOrder { get; set; }
 
-    [Parameter("空单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组")]
+    [Parameter("空单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组1")]
     public int ShortMaxOrders { get; set; }
 
-    [Parameter("空单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组")]
+    [Parameter("空单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组1")]
     public double ShortTakeProfitPips { get; set; }
 
     [Parameter("启动时清空交易记录CSV", DefaultValue = false, Group = "开发调试")]

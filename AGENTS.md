@@ -24,7 +24,7 @@ Each grid works as follows:
 
 ## Parameters
 
-Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
+Each group has the same set, prefixed `Long` (多单组1) or `Short` (空单组1):
 
 | Parameter | Meaning | Min |
 | --- | --- | --- |
