@@ -4,8 +4,12 @@
 
 This is a cTrader cBot project named `Intradaylimitalpha`.
 
-The strategy is a one-directional take-profit grid. There is no entry signal and no stop-loss
-calculation.
+The strategy runs two independent take-profit grids on the same symbol, a long group and a short
+group, each with its own parameters and its own order label (`{OrderLabel}_Long` /
+`{OrderLabel}_Short`). Either group can be disabled. There is no entry signal and no stop-loss
+calculation. Running both at once needs a hedging account.
+
+Each grid works as follows:
 
 * Entry mode:
   * `Market`: open the first order at the current price, then place pending orders one spacing
@@ -23,15 +27,17 @@ calculation.
 
 ## Parameters
 
+Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
+
 | Parameter | Meaning | Min |
 | --- | --- | --- |
-| `EntryMode` | `Market` or `Pending` | |
-| `Direction` | `Long` or `Short` | |
-| `AnchorPrice` | Pending mode start price, 0 = current price | 0 |
-| `SpacingPips` | Distance between neighbouring grid orders | 100 |
-| `LotsPerOrder` | Lot size of every order | 0.01 |
-| `MaxOrders` | N, positions + pending orders | 1 |
-| `TakeProfitPips` | Distance from entry to take profit | 10 |
+| `IsLongGridEnabled` / `IsShortGridEnabled` | Turn the group on or off | |
+| `…EntryMode` | `Market` or `Pending` | |
+| `…AnchorPrice` | Pending mode start price, 0 = current price | 0 |
+| `…SpacingPips` | Distance between neighbouring grid orders | 100 |
+| `…LotsPerOrder` | Lot size of every order | 0.01 |
+| `…MaxOrders` | N, this group's positions + pending orders | 1 |
+| `…TakeProfitPips` | Distance from entry to take profit | 10 |
 
 ## Important user preferences
 

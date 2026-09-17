@@ -34,8 +34,11 @@ public class GridOrderExecutor {
         _robot.PendingOrders.Filled -= OnPendingOrderFilled;
     }
 
-    // anchorPrice is only used in Pending mode; 0 means "start from the current price".
-    public void Start(EntryModeModel entryMode, double anchorPrice) {
+    public void Start() {
+        _robot.Print("*****Grid started | Label: {0}, Mode: {1}, Direction: {2}, AnchorPrice: {3}, SpacingPips: {4}, VolumeInUnits: {5}, N: {6}, TakeProfitPips: {7}",
+            _settings.Label, _settings.EntryMode, _settings.Direction, _settings.AnchorPrice, _settings.SpacingPips,
+            _settings.VolumeInUnits, _settings.MaxOrders, _settings.TakeProfitPips);
+
         // Orders from an earlier run are still live after a restart; building a second grid on top
         // of them would double the exposure, so continue that grid instead.
         int existingOrders = CountGridOrders();
@@ -47,10 +50,11 @@ public class GridOrderExecutor {
             return;
         }
 
-        if (entryMode == EntryModeModel.Market)
+        if (_settings.EntryMode == EntryModeModel.Market)
             BuildFromMarketEntry();
         else
-            PlacePendingOrders(_planner.InitialPendingPrices(anchorPrice > 0.0 ? anchorPrice : CurrentPrice, _settings.MaxOrders));
+            PlacePendingOrders(_planner.InitialPendingPrices(_settings.AnchorPrice > 0.0 ? _settings.AnchorPrice : CurrentPrice,
+                _settings.MaxOrders));
     }
 
     private void BuildFromMarketEntry() {
@@ -58,7 +62,7 @@ public class GridOrderExecutor {
             null, _settings.TakeProfitPips, MarketEntryComment);
 
         if (!result.IsSuccessful) {
-            _robot.Print("*****Market entry failed, no grid built | Error: {0}", result.Error);
+            _robot.Print("*****Market entry failed, no grid built | Grid: {0}, Error: {1}", _settings.Direction, result.Error);
             return;
         }
 
@@ -91,7 +95,8 @@ public class GridOrderExecutor {
         double targetPrice = Math.Round(price, _robot.Symbol.Digits);
 
         if (targetPrice <= 0.0) {
-            _robot.Print("*****Pending order skipped | Target price {0} is not positive. Reduce N or the spacing.", targetPrice);
+            _robot.Print("*****Pending order skipped | Grid: {0}, Target price {1} is not positive. Reduce N or the spacing.",
+                _settings.Direction, targetPrice);
             return false;
         }
 
@@ -103,12 +108,13 @@ public class GridOrderExecutor {
                 _settings.TakeProfitPips, ProtectionType.Relative);
 
         if (!result.IsSuccessful) {
-            _robot.Print("*****Pending order failed | Type: {0}, Price: {1}, Error: {2}", orderType, targetPrice, result.Error);
+            _robot.Print("*****Pending order failed | Grid: {0}, Type: {1}, Price: {2}, Error: {3}", _settings.Direction, orderType, targetPrice,
+                result.Error);
             return false;
         }
 
-        _robot.Print("*****Pending order placed | Type: {0}, Price: {1}, GridOrders: {2}/{3}", orderType, targetPrice, CountGridOrders(),
-            _settings.MaxOrders);
+        _robot.Print("*****Pending order placed | Grid: {0}, Type: {1}, Price: {2}, GridOrders: {3}/{4}", _settings.Direction, orderType,
+            targetPrice, CountGridOrders(), _settings.MaxOrders);
         return true;
     }
 
@@ -151,7 +157,8 @@ public class GridOrderExecutor {
             _robot.TimeFrame.ToString(), _robot.Server.Time, GetClosePrice(position), entryEquity, _robot.Account.Equity);
 
         _positionEntryEquities.Remove(position.Id);
-        _robot.Print("*****Grid position closed | Id: {0}, Reason: {1}, ProfitLoss: {2}", closeRecordId, args.Reason, position.NetProfit);
+        _robot.Print("*****Grid position closed | Grid: {0}, Id: {1}, Reason: {2}, ProfitLoss: {3}", _settings.Direction, closeRecordId,
+            args.Reason, position.NetProfit);
     }
 
     private int CountGridOrders() {

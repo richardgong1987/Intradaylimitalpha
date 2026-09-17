@@ -1,14 +1,19 @@
 namespace cAlgo.Robots;
 
-// The grid inputs the executor needs, resolved once at start from the cBot parameters.
+// One grid's inputs (the long group or the short group), resolved once at start from the cBot parameters.
 public class GridSettingsModel {
-    // Every grid order carries exactly this label, which is how the grid tells its orders apart
-    // from manual trades and other bots on the same symbol.
+    // Every order of this grid carries exactly this label, which is how the grid tells its orders apart
+    // from the other direction's grid, manual trades, and other bots on the same symbol.
     public string Label { get; init; } = "";
     public TradeDirectionModel Direction { get; init; }
+    public EntryModeModel EntryMode { get; init; }
+
+    // Pending mode only; 0 means "start from the current price".
+    public double AnchorPrice { get; init; }
+    public double SpacingPips { get; init; }
     public double VolumeInUnits { get; init; }
 
-    // N: open positions plus pending orders are kept at this total.
+    // N: this grid's open positions plus pending orders are kept at this total.
     public int MaxOrders { get; init; }
     public double TakeProfitPips { get; init; }
 }

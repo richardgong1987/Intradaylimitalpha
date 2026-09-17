@@ -5,8 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A **cTrader cBot** (automated trading robot) written in C# against the cAlgo API, targeting
-`net6.0`. The strategy is a **one-directional take-profit grid** with no entry signal and no
-stop loss:
+`net6.0`. The strategy runs **two independent take-profit grids** on one symbol — a long group
+and a short group, each with its own parameters and label (`{OrderLabel}_Long` /
+`{OrderLabel}_Short`), either one can be disabled. There is no entry signal and no stop loss.
+Each grid (one `GridOrderExecutor` per enabled group) works like this:
 
 - Entry: `Market` opens the first order at the current price, then places pending orders one
   spacing apart from that fill; `Pending` places every order as a pending order, spaced from
