@@ -49,8 +49,8 @@ public class PdhpdlOrderPlanner {
             return planModel;
         }
 
-        FillPlan(planModel, directionModel, entry, stop, takeProfit, riskPrice, stopLossPips, takeProfitPips, volume,
-            accountEquity, riskMoney);
+        FillPlan(planModel, directionModel, entry, stop, takeProfit, riskPrice, stopLossPips, takeProfitPips, volume, accountEquity,
+            riskMoney);
         return planModel;
     }
 
@@ -86,9 +86,9 @@ public class PdhpdlOrderPlanner {
         return false;
     }
 
-    private void FillPlan(PdhpdlOrderPlanModel planModel, PdhpdlTradeDirectionModel directionModel,
-        double entry, double stop, double takeProfit, double riskPrice, double stopLossPips, double takeProfitPips, double volume,
-        double accountEquity, double riskMoney) {
+    private void FillPlan(PdhpdlOrderPlanModel planModel, PdhpdlTradeDirectionModel directionModel, double entry, double stop,
+        double takeProfit, double riskPrice, double stopLossPips, double takeProfitPips, double volume, double accountEquity,
+        double riskMoney) {
         planModel.IsValid = true;
         planModel.DirectionModel = directionModel;
         planModel.EntryPrice = entry;
@@ -103,5 +103,4 @@ public class PdhpdlOrderPlanner {
         planModel.RiskMoney = riskMoney;
         planModel.EstimatedRiskMoney = _symbolModel.AmountRisked(volume, stopLossPips);
     }
-
 }

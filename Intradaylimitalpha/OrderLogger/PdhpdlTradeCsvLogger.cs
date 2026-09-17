@@ -148,8 +148,8 @@ public class PdhpdlTradeCsvLogger {
 
     private static string BuildHeader() {
         // "多空" (Side) 字段已废弃，从当前表头中移除。历史文件由 PdhpdlTradeCsvMigrator 升级时会剥离该列。
-        return string.Join(",", "编号", "关键位", "信号", "备注", "交易品种", "时间周期", "入场时间", "入场价格", "平仓价格", "止损价格", "止盈价格", "风险价格距离", "下单数量",
-            "平仓原因", "开仓账户权益", "平仓账户权益", "平仓盈亏", "平仓时间", "持仓ID", "成交ID");
+        return string.Join(",", "编号", "关键位", "信号", "备注", "交易品种", "时间周期", "入场时间", "入场价格", "平仓价格", "止损价格", "止盈价格", "风险价格距离", "下单数量", "平仓原因",
+            "开仓账户权益", "平仓账户权益", "平仓盈亏", "平仓时间", "持仓ID", "成交ID");
     }
 
     private static string FormatOptionalNumber(double value) {
@@ -204,5 +204,4 @@ public class PdhpdlTradeCsvLogger {
 
         return position.Deals[position.Deals.Count - 1].Id.ToString();
     }
-
 }

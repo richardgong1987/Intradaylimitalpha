@@ -24,7 +24,9 @@ public static class PdhpdlTradeCsvMigrator {
     private const int ColumnCountWithDmsState = 27;
     private const int ColumnCountWithAdxPreviousState = 28;
     private const int ColumnCountWithGapX = 29;
+
     private const int ColumnCountWithShortGapX = 30;
+
     // "多空"(Side) 列移除之前的旧 schema：所有历史布局的第 1 列（索引 SideColumnIndex）都是 Side。
     private const int ColumnCountWithSide = 23;
     private const int PreviousColumnCount = 26;

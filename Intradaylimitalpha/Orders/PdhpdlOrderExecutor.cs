@@ -57,8 +57,7 @@ public class PdhpdlOrderExecutor {
         string label = _strategyLabelPrefix + signalModel.Level.Name;
 
         if (HasPositionForLevel(label)) {
-            _robot.Print("*****Order skipped | Level {0} already has an open position on symbol: {1}",
-                signalModel.Level.Name, _symbolName);
+            _robot.Print("*****Order skipped | Level {0} already has an open position on symbol: {1}", signalModel.Level.Name, _symbolName);
             return false;
         }
 
