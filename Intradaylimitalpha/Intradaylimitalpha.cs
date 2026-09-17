@@ -171,8 +171,11 @@ public class Intradaylimitalpha : Robot {
 
     private GridSettingsModel GridSettings(TradeDirectionModel direction, int groupNumber, double anchorPrice, double spacingPips,
         double lotsPerOrder, int maxOrders, double takeProfitPips) {
+        string groupName = GroupName(direction, groupNumber);
+
         return new GridSettingsModel {
-            Label = GridLabel(direction, groupNumber),
+            Label = $"{OrderLabel.Trim()}_{groupName}",
+            GroupName = groupName,
             Direction = direction,
             AnchorPrice = anchorPrice,
             SpacingPips = spacingPips,
@@ -182,12 +185,12 @@ public class Intradaylimitalpha : Robot {
         };
     }
 
-    // Each group gets its own label, so the grids count, refill and restart independently even though they
-    // share one symbol. Group 1 keeps the original "{OrderLabel}_Long" / "{OrderLabel}_Short" labels so grids
-    // already running on an account are still recognised; later groups append their number ("_Long2").
-    private string GridLabel(TradeDirectionModel direction, int groupNumber) {
+    // Each group gets its own label ("{OrderLabel}_{GroupName}"), so the grids count, refill and restart
+    // independently even though they share one symbol. Group 1 keeps the original "Long" / "Short" name so
+    // grids already running on an account are still recognised; later groups append their number ("Long2").
+    private static string GroupName(TradeDirectionModel direction, int groupNumber) {
         string groupSuffix = groupNumber == 1 ? "" : groupNumber.ToString();
-        return $"{OrderLabel.Trim()}_{direction}{groupSuffix}";
+        return $"{direction}{groupSuffix}";
     }
 
     // Switching a group off (start price 0) withdraws its unfilled orders from an earlier run. Filled
