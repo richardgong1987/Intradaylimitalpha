@@ -7,7 +7,7 @@ namespace cAlgo.Robots;
 
 [Robot(TimeZone = TimeZones.TokyoStandardTime, AccessRights = AccessRights.FullAccess, AddIndicators = false)]
 public class Intradaylimitalpha : Robot {
-    [Parameter("订单标签", DefaultValue = "ManuallyTrade-label")]
+    [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
     [Parameter("开仓方式 (Market=现价开仓, Pending=挂单开仓)", DefaultValue = EntryModeModel.Market, Group = "入场设定")]
@@ -37,7 +37,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("debug调试", DefaultValue = false, Group = "开发调试")]
     public bool IsDebug { get; set; }
 
-    [Parameter("输出文件名", DefaultValue = "ManuallyTrades.csv", Group = "开发调试")]
+    [Parameter("输出文件名", DefaultValue = "Intradaylimitalpha.csv", Group = "开发调试")]
     public string FileName { get; set; }
 
     private GridOrderExecutor _orderExecutor;
