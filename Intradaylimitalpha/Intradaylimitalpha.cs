@@ -10,7 +10,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
-    [Parameter("开仓方式 (Market=现价开仓, Pending=挂单开仓)", DefaultValue = EntryModeModel.Market, Group = "入场设定")]
+    [Parameter("开仓方式 (Market=现价开仓, Pending=挂单开仓)", DefaultValue = EntryModeModel.Pending, Group = "入场设定")]
     public EntryModeModel EntryMode { get; set; }
 
     [Parameter("方向 (Long=多单, Short=空单)", DefaultValue = TradeDirectionModel.Long, Group = "入场设定")]
