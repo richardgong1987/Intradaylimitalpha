@@ -6,9 +6,8 @@ public class GridSettingsModel {
     // from the other direction's grid, manual trades, and other bots on the same symbol.
     public string Label { get; init; } = "";
     public TradeDirectionModel Direction { get; init; }
-    public EntryModeModel EntryMode { get; init; }
 
-    // Pending mode only; 0 means "start from the current price".
+    // 0 means "start from the current price".
     public double AnchorPrice { get; init; }
     public double SpacingPips { get; init; }
     public double VolumeInUnits { get; init; }

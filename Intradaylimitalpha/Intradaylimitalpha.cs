@@ -14,10 +14,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("启用多单组", DefaultValue = true, Group = "多单组")]
     public bool IsLongGridEnabled { get; set; }
 
-    [Parameter("多单开仓方式 (Market=现价开仓, Pending=挂单开仓)", DefaultValue = EntryModeModel.Pending, Group = "多单组")]
-    public EntryModeModel LongEntryMode { get; set; }
-
-    [Parameter("多单挂单起始价 (0=现价, 仅挂单开仓)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
+    [Parameter("多单挂单起始价 (0=现价)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
     public double LongAnchorPrice { get; set; }
 
     [Parameter("多单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组")]
@@ -35,10 +32,7 @@ public class Intradaylimitalpha : Robot {
     [Parameter("启用空单组", DefaultValue = true, Group = "空单组")]
     public bool IsShortGridEnabled { get; set; }
 
-    [Parameter("空单开仓方式 (Market=现价开仓, Pending=挂单开仓)", DefaultValue = EntryModeModel.Pending, Group = "空单组")]
-    public EntryModeModel ShortEntryMode { get; set; }
-
-    [Parameter("空单挂单起始价 (0=现价, 仅挂单开仓)", DefaultValue = 0, MinValue = 0, Group = "空单组")]
+    [Parameter("空单挂单起始价 (0=现价)", DefaultValue = 0, MinValue = 0, Group = "空单组")]
     public double ShortAnchorPrice { get; set; }
 
     [Parameter("空单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组")]
@@ -104,7 +98,6 @@ public class Intradaylimitalpha : Robot {
             yield return new GridSettingsModel {
                 Label = GridLabel(TradeDirectionModel.Long),
                 Direction = TradeDirectionModel.Long,
-                EntryMode = LongEntryMode,
                 AnchorPrice = LongAnchorPrice,
                 SpacingPips = LongSpacingPips,
                 VolumeInUnits = ToVolumeInUnits(LongLotsPerOrder),
@@ -116,7 +109,6 @@ public class Intradaylimitalpha : Robot {
             yield return new GridSettingsModel {
                 Label = GridLabel(TradeDirectionModel.Short),
                 Direction = TradeDirectionModel.Short,
-                EntryMode = ShortEntryMode,
                 AnchorPrice = ShortAnchorPrice,
                 SpacingPips = ShortSpacingPips,
                 VolumeInUnits = ToVolumeInUnits(ShortLotsPerOrder),

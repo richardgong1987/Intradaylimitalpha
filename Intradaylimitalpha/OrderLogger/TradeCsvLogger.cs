@@ -44,7 +44,7 @@ public class TradeCsvLogger {
 
     // The grid has no stop loss, so the stop and risk columns stay 0. The header is unchanged so
     // existing files and report scripts keep reading it: 关键位 holds the grid direction and
-    // 信号 how the order entered (Market / Limit / Stop).
+    // 信号 how the order entered (Limit / Stop).
     public string AppendEntry(Position position, string direction, string orderKind, double entryAccountEquity, string symbolName,
         string timeFrame) {
         if (position == null)

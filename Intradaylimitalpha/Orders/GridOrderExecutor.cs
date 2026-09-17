@@ -10,8 +10,6 @@ namespace cAlgo.Robots;
 // positions plus pending orders are back at N. It also writes each fill and close to the CSV.
 // All price geometry lives in GridPlanner.
 public class GridOrderExecutor {
-    private const string MarketEntryComment = "ENTRY";
-
     private readonly Robot _robot;
     private readonly GridSettingsModel _settings;
     private readonly GridPlanner _planner;
@@ -35,8 +33,8 @@ public class GridOrderExecutor {
     }
 
     public void Start() {
-        _robot.Print("*****Grid started | Label: {0}, Mode: {1}, Direction: {2}, AnchorPrice: {3}, SpacingPips: {4}, VolumeInUnits: {5}, N: {6}, TakeProfitPips: {7}",
-            _settings.Label, _settings.EntryMode, _settings.Direction, _settings.AnchorPrice, _settings.SpacingPips,
+        _robot.Print("*****Grid started | Label: {0}, Direction: {1}, AnchorPrice: {2}, SpacingPips: {3}, VolumeInUnits: {4}, N: {5}, TakeProfitPips: {6}",
+            _settings.Label, _settings.Direction, _settings.AnchorPrice, _settings.SpacingPips,
             _settings.VolumeInUnits, _settings.MaxOrders, _settings.TakeProfitPips);
 
         // Orders from an earlier run are still live after a restart; building a second grid on top
@@ -50,24 +48,8 @@ public class GridOrderExecutor {
             return;
         }
 
-        if (_settings.EntryMode == EntryModeModel.Market)
-            BuildFromMarketEntry();
-        else
-            PlacePendingOrders(_planner.InitialPendingPrices(_settings.AnchorPrice > 0.0 ? _settings.AnchorPrice : CurrentPrice,
-                _settings.MaxOrders));
-    }
-
-    private void BuildFromMarketEntry() {
-        TradeResult result = _robot.ExecuteMarketOrder(ToTradeType(), _robot.SymbolName, _settings.VolumeInUnits, _settings.Label,
-            null, _settings.TakeProfitPips, MarketEntryComment);
-
-        if (!result.IsSuccessful) {
-            _robot.Print("*****Market entry failed, no grid built | Grid: {0}, Error: {1}", _settings.Direction, result.Error);
-            return;
-        }
-
-        RecordEntry(result.Position, "Market");
-        PlacePendingOrders(_planner.InitialPendingPrices(result.Position.EntryPrice, _settings.MaxOrders - 1));
+        PlacePendingOrders(_planner.InitialPendingPrices(_settings.AnchorPrice > 0.0 ? _settings.AnchorPrice : CurrentPrice,
+            _settings.MaxOrders));
     }
 
     private void PlacePendingOrders(IEnumerable<double> prices) {

@@ -11,11 +11,8 @@ calculation. Running both at once needs a hedging account.
 
 Each grid works as follows:
 
-* Entry mode:
-  * `Market`: open the first order at the current price, then place pending orders one spacing
-    apart from that fill.
-  * `Pending`: place every order as a pending order, spaced from the anchor price (or the
-    current price when the anchor is 0).
+* Entry: every order is a pending order (there is no market entry), spaced from the anchor
+  price (or the current price when the anchor is 0).
 * Direction: `Long` grids step downward, `Short` grids step upward. A pending order on the
   favourable side of the market is a limit order, otherwise a stop order.
 * Every order uses the same lot size and the same take-profit distance (pips).
@@ -32,8 +29,7 @@ Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
 | Parameter | Meaning | Min |
 | --- | --- | --- |
 | `IsLongGridEnabled` / `IsShortGridEnabled` | Turn the group on or off | |
-| `…EntryMode` | `Market` or `Pending` | |
-| `…AnchorPrice` | Pending mode start price, 0 = current price | 0 |
+| `…AnchorPrice` | Grid start price, 0 = current price | 0 |
 | `…SpacingPips` | Distance between neighbouring grid orders | 100 |
 | `…LotsPerOrder` | Lot size of every order | 0.01 |
 | `…MaxOrders` | N, this group's positions + pending orders | 1 |
@@ -53,7 +49,7 @@ Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
 * `Intradaylimitalpha.cs`: cBot lifecycle and composition root. Reads parameters, resolves the
   order volume, creates the services, starts the grid.
 * `Orders/GridPlanner.cs`: pure grid price geometry, unit tested in `tests/Grid.Tests`.
-* `Orders/GridOrderExecutor.cs`: places market/limit/stop orders, keeps the grid at `N`,
+* `Orders/GridOrderExecutor.cs`: places limit/stop orders, keeps the grid at `N`,
   refills on take profit, writes CSV records.
 * `OrderLogger/TradeCsvLogger.cs`, `OrderLogger/TradeCsvMigrator.cs`: CSV output and header upgrades.
 * `Models/`: plain data types and enums.
