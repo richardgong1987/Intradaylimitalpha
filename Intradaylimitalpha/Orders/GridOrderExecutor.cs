@@ -77,7 +77,7 @@ public class GridOrderExecutor {
 
         if (targetPrice <= 0.0) {
             _robot.Print("*****Pending order skipped | Grid: {0}, Target price {1} is not positive. Reduce N or the spacing.",
-                _settings.Direction, targetPrice);
+                _settings.Label, targetPrice);
             return false;
         }
 
@@ -89,12 +89,12 @@ public class GridOrderExecutor {
                 _settings.TakeProfitPips, ProtectionType.Relative);
 
         if (!result.IsSuccessful) {
-            _robot.Print("*****Pending order failed | Grid: {0}, Type: {1}, Price: {2}, Error: {3}", _settings.Direction, orderType, targetPrice,
+            _robot.Print("*****Pending order failed | Grid: {0}, Type: {1}, Price: {2}, Error: {3}", _settings.Label, orderType, targetPrice,
                 result.Error);
             return false;
         }
 
-        _robot.Print("*****Pending order placed | Grid: {0}, Type: {1}, Price: {2}, GridOrders: {3}/{4}", _settings.Direction, orderType,
+        _robot.Print("*****Pending order placed | Grid: {0}, Type: {1}, Price: {2}, GridOrders: {3}/{4}", _settings.Label, orderType,
             targetPrice, CountGridOrders(), _settings.MaxOrders);
         return true;
     }
@@ -138,7 +138,7 @@ public class GridOrderExecutor {
             _robot.TimeFrame.ToString(), _robot.Server.Time, GetClosePrice(position), entryEquity, _robot.Account.Equity);
 
         _positionEntryEquities.Remove(position.Id);
-        _robot.Print("*****Grid position closed | Grid: {0}, Id: {1}, Reason: {2}, ProfitLoss: {3}", _settings.Direction, closeRecordId,
+        _robot.Print("*****Grid position closed | Grid: {0}, Id: {1}, Reason: {2}, ProfitLoss: {3}", _settings.Label, closeRecordId,
             args.Reason, position.NetProfit);
     }
 

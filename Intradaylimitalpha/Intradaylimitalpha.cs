@@ -12,35 +12,95 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
-    [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组1")]
+    [Parameter("多单1挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组1")]
     public double LongAnchorPrice { get; set; }
 
-    [Parameter("多单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组1")]
+    [Parameter("多单1挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组1")]
     public double LongSpacingPips { get; set; }
 
-    [Parameter("多单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组1")]
+    [Parameter("多单1每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组1")]
     public double LongLotsPerOrder { get; set; }
 
-    [Parameter("多单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组1")]
+    [Parameter("多单1持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组1")]
     public int LongMaxOrders { get; set; }
 
-    [Parameter("多单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组1")]
+    [Parameter("多单1止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组1")]
     public double LongTakeProfitPips { get; set; }
 
-    [Parameter("空单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组1")]
+    [Parameter("空单1挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组1")]
     public double ShortAnchorPrice { get; set; }
 
-    [Parameter("空单挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组1")]
+    [Parameter("空单1挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组1")]
     public double ShortSpacingPips { get; set; }
 
-    [Parameter("空单每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组1")]
+    [Parameter("空单1每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组1")]
     public double ShortLotsPerOrder { get; set; }
 
-    [Parameter("空单持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组1")]
+    [Parameter("空单1持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组1")]
     public int ShortMaxOrders { get; set; }
 
-    [Parameter("空单止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组1")]
+    [Parameter("空单1止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组1")]
     public double ShortTakeProfitPips { get; set; }
+
+    [Parameter("多单2挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组2")]
+    public double Long2AnchorPrice { get; set; }
+
+    [Parameter("多单2挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组2")]
+    public double Long2SpacingPips { get; set; }
+
+    [Parameter("多单2每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组2")]
+    public double Long2LotsPerOrder { get; set; }
+
+    [Parameter("多单2持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组2")]
+    public int Long2MaxOrders { get; set; }
+
+    [Parameter("多单2止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组2")]
+    public double Long2TakeProfitPips { get; set; }
+
+    [Parameter("空单2挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组2")]
+    public double Short2AnchorPrice { get; set; }
+
+    [Parameter("空单2挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组2")]
+    public double Short2SpacingPips { get; set; }
+
+    [Parameter("空单2每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组2")]
+    public double Short2LotsPerOrder { get; set; }
+
+    [Parameter("空单2持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组2")]
+    public int Short2MaxOrders { get; set; }
+
+    [Parameter("空单2止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组2")]
+    public double Short2TakeProfitPips { get; set; }
+
+    [Parameter("多单3挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组3")]
+    public double Long3AnchorPrice { get; set; }
+
+    [Parameter("多单3挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "多单组3")]
+    public double Long3SpacingPips { get; set; }
+
+    [Parameter("多单3每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "多单组3")]
+    public double Long3LotsPerOrder { get; set; }
+
+    [Parameter("多单3持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "多单组3")]
+    public int Long3MaxOrders { get; set; }
+
+    [Parameter("多单3止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "多单组3")]
+    public double Long3TakeProfitPips { get; set; }
+
+    [Parameter("空单3挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "空单组3")]
+    public double Short3AnchorPrice { get; set; }
+
+    [Parameter("空单3挂单间距 (pips)", DefaultValue = 100, MinValue = 100, Group = "空单组3")]
+    public double Short3SpacingPips { get; set; }
+
+    [Parameter("空单3每单手数", DefaultValue = 0.01, MinValue = 0.01, Step = 0.01, Group = "空单组3")]
+    public double Short3LotsPerOrder { get; set; }
+
+    [Parameter("空单3持仓+挂单总数 N", DefaultValue = 20, MinValue = 1, Group = "空单组3")]
+    public int Short3MaxOrders { get; set; }
+
+    [Parameter("空单3止盈距离 (pips)", DefaultValue = 100, MinValue = 10, Group = "空单组3")]
+    public double Short3TakeProfitPips { get; set; }
 
     [Parameter("启动时清空交易记录CSV", DefaultValue = false, Group = "开发调试")]
     public bool ResetTradeLogOnStart { get; set; }
@@ -53,10 +113,6 @@ public class Intradaylimitalpha : Robot {
 
     private readonly List<GridOrderExecutor> _gridExecutors = new();
 
-    // A group is switched on by giving it a start price; 0 leaves it off.
-    private bool IsLongGridEnabled => LongAnchorPrice > 0.0;
-    private bool IsShortGridEnabled => ShortAnchorPrice > 0.0;
-
     protected override void OnStart() {
         // A blank label would make every unlabelled order on the symbol look like part of a grid.
         if (string.IsNullOrWhiteSpace(OrderLabel)) {
@@ -65,20 +121,22 @@ public class Intradaylimitalpha : Robot {
             return;
         }
 
-        if (!IsLongGridEnabled)
-            CancelPendingOrders(GridLabel(TradeDirectionModel.Long));
+        List<GridSettingsModel> allGrids = AllGridSettings();
 
-        if (!IsShortGridEnabled)
-            CancelPendingOrders(GridLabel(TradeDirectionModel.Short));
+        foreach (GridSettingsModel settings in allGrids.Where(settings => !settings.IsEnabled)) {
+            CancelPendingOrders(settings.Label);
+        }
 
-        if (!IsLongGridEnabled && !IsShortGridEnabled) {
-            Print("*****Neither the long group nor the short group has a start price. cBot stopped.");
+        List<GridSettingsModel> enabledGrids = allGrids.Where(settings => settings.IsEnabled).ToList();
+
+        if (enabledGrids.Count == 0) {
+            Print("*****No group has a start price. cBot stopped.");
             Stop();
             return;
         }
 
         // Check every enabled group before placing anything, so a bad lot size never leaves one grid half-built.
-        if ((IsLongGridEnabled && !IsTradableLotSize(LongLotsPerOrder)) || (IsShortGridEnabled && !IsTradableLotSize(ShortLotsPerOrder))) {
+        if (!enabledGrids.All(IsTradableVolume)) {
             Stop();
             return;
         }
@@ -88,7 +146,7 @@ public class Intradaylimitalpha : Robot {
         var csvLogger = new TradeCsvLogger(ResetTradeLogOnStart, ResolveReportsDirectory(), FileName);
         Print("****CSV logger path: {0}", csvLogger.FilePath);
 
-        foreach (GridSettingsModel settings in EnabledGridSettings()) {
+        foreach (GridSettingsModel settings in enabledGrids) {
             var planner = new GridPlanner(settings.Direction, settings.SpacingPips, Symbol.PipSize);
             _gridExecutors.Add(new GridOrderExecutor(this, settings, planner, csvLogger));
         }
@@ -98,34 +156,38 @@ public class Intradaylimitalpha : Robot {
         }
     }
 
-    private IEnumerable<GridSettingsModel> EnabledGridSettings() {
-        if (IsLongGridEnabled)
-            yield return new GridSettingsModel {
-                Label = GridLabel(TradeDirectionModel.Long),
-                Direction = TradeDirectionModel.Long,
-                AnchorPrice = LongAnchorPrice,
-                SpacingPips = LongSpacingPips,
-                VolumeInUnits = ToVolumeInUnits(LongLotsPerOrder),
-                MaxOrders = LongMaxOrders,
-                TakeProfitPips = LongTakeProfitPips
-            };
-
-        if (IsShortGridEnabled)
-            yield return new GridSettingsModel {
-                Label = GridLabel(TradeDirectionModel.Short),
-                Direction = TradeDirectionModel.Short,
-                AnchorPrice = ShortAnchorPrice,
-                SpacingPips = ShortSpacingPips,
-                VolumeInUnits = ToVolumeInUnits(ShortLotsPerOrder),
-                MaxOrders = ShortMaxOrders,
-                TakeProfitPips = ShortTakeProfitPips
-            };
+    // Every group the cBot offers, switched on or not. Columns: direction, group number, start price,
+    // spacing (pips), lots per order, N, take profit (pips).
+    private List<GridSettingsModel> AllGridSettings() {
+        return new List<GridSettingsModel> {
+            GridSettings(TradeDirectionModel.Long, 1, LongAnchorPrice, LongSpacingPips, LongLotsPerOrder, LongMaxOrders, LongTakeProfitPips),
+            GridSettings(TradeDirectionModel.Short, 1, ShortAnchorPrice, ShortSpacingPips, ShortLotsPerOrder, ShortMaxOrders, ShortTakeProfitPips),
+            GridSettings(TradeDirectionModel.Long, 2, Long2AnchorPrice, Long2SpacingPips, Long2LotsPerOrder, Long2MaxOrders, Long2TakeProfitPips),
+            GridSettings(TradeDirectionModel.Short, 2, Short2AnchorPrice, Short2SpacingPips, Short2LotsPerOrder, Short2MaxOrders, Short2TakeProfitPips),
+            GridSettings(TradeDirectionModel.Long, 3, Long3AnchorPrice, Long3SpacingPips, Long3LotsPerOrder, Long3MaxOrders, Long3TakeProfitPips),
+            GridSettings(TradeDirectionModel.Short, 3, Short3AnchorPrice, Short3SpacingPips, Short3LotsPerOrder, Short3MaxOrders, Short3TakeProfitPips)
+        };
     }
 
-    // Each direction gets its own label ("{OrderLabel}_Long" / "{OrderLabel}_Short"), so the two grids
-    // count, refill and restart independently even though they share one symbol.
-    private string GridLabel(TradeDirectionModel direction) {
-        return $"{OrderLabel.Trim()}_{direction}";
+    private GridSettingsModel GridSettings(TradeDirectionModel direction, int groupNumber, double anchorPrice, double spacingPips,
+        double lotsPerOrder, int maxOrders, double takeProfitPips) {
+        return new GridSettingsModel {
+            Label = GridLabel(direction, groupNumber),
+            Direction = direction,
+            AnchorPrice = anchorPrice,
+            SpacingPips = spacingPips,
+            VolumeInUnits = ToVolumeInUnits(lotsPerOrder),
+            MaxOrders = maxOrders,
+            TakeProfitPips = takeProfitPips
+        };
+    }
+
+    // Each group gets its own label, so the grids count, refill and restart independently even though they
+    // share one symbol. Group 1 keeps the original "{OrderLabel}_Long" / "{OrderLabel}_Short" labels so grids
+    // already running on an account are still recognised; later groups append their number ("_Long2").
+    private string GridLabel(TradeDirectionModel direction, int groupNumber) {
+        string groupSuffix = groupNumber == 1 ? "" : groupNumber.ToString();
+        return $"{OrderLabel.Trim()}_{direction}{groupSuffix}";
     }
 
     // Switching a group off (start price 0) withdraws its unfilled orders from an earlier run. Filled
@@ -147,14 +209,12 @@ public class Intradaylimitalpha : Robot {
         return Symbol.NormalizeVolumeInUnits(Symbol.QuantityToVolumeInUnits(lots), RoundingMode.ToNearest);
     }
 
-    private bool IsTradableLotSize(double lots) {
-        double volumeInUnits = ToVolumeInUnits(lots);
-
-        if (volumeInUnits >= Symbol.VolumeInUnitsMin && volumeInUnits <= Symbol.VolumeInUnitsMax)
+    private bool IsTradableVolume(GridSettingsModel settings) {
+        if (settings.VolumeInUnits >= Symbol.VolumeInUnitsMin && settings.VolumeInUnits <= Symbol.VolumeInUnitsMax)
             return true;
 
-        Print("*****Lots per order {0} is outside the broker's volume range ({1} - {2} units). cBot stopped.", lots,
-            Symbol.VolumeInUnitsMin, Symbol.VolumeInUnitsMax);
+        Print("*****Lots per order of {0} ({1} units) is outside the broker's volume range ({2} - {3} units). cBot stopped.",
+            settings.Label, settings.VolumeInUnits, Symbol.VolumeInUnitsMin, Symbol.VolumeInUnitsMax);
         return false;
     }
 
