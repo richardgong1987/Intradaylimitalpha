@@ -185,6 +185,14 @@ public class Intradaylimitalpha : Robot {
         return Account.IsLive ? "release_trading_reports" : "simulate_trading_reports";
     }
 
+    // Fills and closes already refill the grids as they happen; this catches what no event reports,
+    // such as an order the broker rejected earlier.
+    protected override void OnBar() {
+        foreach (GridOrderExecutor executor in _gridExecutors) {
+            executor.MaintainGrid();
+        }
+    }
+
     // Grid orders are left in place on stop, so a restart continues the same grids.
     protected override void OnStop() {
         foreach (GridOrderExecutor executor in _gridExecutors) {

@@ -15,9 +15,11 @@ Each grid (one `GridOrderExecutor` per enabled group) works like this:
 - Entry: every order is a pending order (there is no market entry), spaced from the anchor
   price. Long grids step downward, short grids step upward. Distances are in pips.
 - Every order has the same lot size and the same take-profit distance.
-- Open positions + pending orders are kept at `N`. When a grid position takes profit, a new
-  pending order is added one spacing **beyond the farthest order** (the grid extends; it
-  does not refill the gap). Manual closes and stop-outs do not refill.
+- Open positions + pending orders are kept at `N`. Whenever the total drops below `N` — a
+  close for any reason (take profit, manual, stop-out), or a pending order cancelled, expired
+  or rejected — new pending orders are added one spacing **beyond the farthest order** (the
+  grid extends; it does not refill the gap). `OnBar` re-checks every bar, so a placement the
+  broker rejected is retried. An empty grid is rebuilt from its anchor price.
 - On restart, existing orders with the same label are continued (topped up to `N`) instead
   of building a second grid.
 - `MaxPositionsCount` caps `|long positions - short positions|` (0 = no cap). When one side's
@@ -34,8 +36,8 @@ Behavior classes live beside the feature they serve; all data types live in `Mod
 (suffixed `Model`):
 
 - `Orders/` — `GridPlanner` (pure price geometry: initial levels, refill price, limit vs
-  stop; unit tested); `GridOrderExecutor` places orders, counts live grid orders, refills on
-  take profit, enforces the position-difference cap, and writes the CSV; `PositionLimitRule`
+  stop; unit tested); `GridOrderExecutor` places orders, counts live grid orders, refills whenever
+  the total drops below `N`, enforces the position-difference cap, and writes the CSV; `PositionLimitRule`
   (pure, unit tested) decides when the cap is reached.
 - `OrderLogger/` — `TradeCsvLogger` (append-only trade CSV) and `TradeCsvMigrator` (upgrades
   old CSV headers).

@@ -17,9 +17,10 @@ Each grid works as follows:
 * Direction: `Long` grids step downward, `Short` grids step upward. A pending order on the
   favourable side of the market is a limit order, otherwise a stop order.
 * Every order uses the same lot size and the same take-profit distance (pips).
-* Open positions + pending orders are kept at `N`. When a grid position takes profit, a new
-  pending order is placed one spacing beyond the farthest grid order.
-* Manual closes and stop-outs do not trigger a refill.
+* Open positions + pending orders are kept at `N`. Whenever the total drops below `N` (a close
+  for any reason, or a pending order cancelled, expired or rejected), new pending orders are
+  placed one spacing beyond the farthest grid order. Every bar re-checks, so a rejected
+  placement is retried. An empty grid is rebuilt from its anchor price.
 * On restart, existing orders with the same label are continued instead of building a new grid.
 * Each fill and close is written to a CSV file.
 
@@ -56,7 +57,7 @@ Shared by both groups:
   order volume, creates the services, starts the grid.
 * `Orders/GridPlanner.cs`: pure grid price geometry, unit tested in `tests/Grid.Tests`.
 * `Orders/GridOrderExecutor.cs`: places limit/stop orders, keeps the grid at `N`,
-  refills on take profit, enforces the position-difference cap, writes CSV records.
+  refills whenever the total drops below `N`, enforces the position-difference cap, writes CSV records.
 * `Orders/PositionLimitRule.cs`: pure check for the position-difference cap, unit tested.
 * `OrderLogger/TradeCsvLogger.cs`, `OrderLogger/TradeCsvMigrator.cs`: CSV output and header upgrades.
 * `Models/`: plain data types and enums.

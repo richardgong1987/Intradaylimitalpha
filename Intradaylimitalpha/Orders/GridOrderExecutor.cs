@@ -5,9 +5,9 @@ using cAlgo.API;
 
 namespace cAlgo.Robots;
 
-// Places and maintains the grid's cTrader orders. It builds the initial grid, and whenever a
-// grid position takes profit it adds pending orders beyond the farthest order until open
-// positions plus pending orders are back at N. It also writes each fill and close to the CSV.
+// Places and maintains the grid's cTrader orders. It builds the initial grid, and whenever open
+// positions plus pending orders drop below N, for whatever reason, it adds pending orders beyond
+// the farthest order until the total is back at N. It also writes each fill and close to the CSV.
 // While this side's positions outnumber the opposite side's by the configured cap, its pending
 // orders are withdrawn, and they come back once the difference drops. All price geometry lives in
 // GridPlanner.
@@ -30,11 +30,13 @@ public class GridOrderExecutor {
 
         _robot.Positions.Closed += OnPositionClosed;
         _robot.PendingOrders.Filled += OnPendingOrderFilled;
+        _robot.PendingOrders.Cancelled += OnPendingOrderCancelled;
     }
 
     public void Stop() {
         _robot.Positions.Closed -= OnPositionClosed;
         _robot.PendingOrders.Filled -= OnPendingOrderFilled;
+        _robot.PendingOrders.Cancelled -= OnPendingOrderCancelled;
     }
 
     public void Start() {
@@ -49,8 +51,7 @@ public class GridOrderExecutor {
         if (existingOrders > 0) {
             _robot.Print("*****Existing grid orders found | Label: {0}, Count: {1}. Continuing that grid instead of building a new one.",
                 _settings.Label, existingOrders);
-            TopUp(GridPrices());
-            EnforcePositionLimit();
+            MaintainGrid();
             return;
         }
 
@@ -64,14 +65,33 @@ public class GridOrderExecutor {
         }
     }
 
+    // Brings the grid back to N, or holds it off the book while the position-difference cap is reached.
+    // Also called on every bar, so an order the broker rejected earlier gets another try.
+    public void MaintainGrid() {
+        if (IsPositionLimitReached()) {
+            WithdrawForPositionLimit();
+            return;
+        }
+
+        if (_isWithdrawnByPositionLimit) {
+            _isWithdrawnByPositionLimit = false;
+            _robot.Print("*****Position limit cleared | Grid: {0}. Restoring pending orders.", _settings.Label);
+        }
+
+        TopUp(GridPrices());
+    }
+
     // Keeps extending the grid until positions plus pending orders reach N. extendFrom holds the
     // prices the new orders are measured from; each placed order joins it, so the next one goes
-    // one spacing further.
+    // one spacing further. An empty grid starts over from the anchor.
     private void TopUp(List<double> extendFrom) {
         if (IsPositionLimitReached())
             return;
 
-        while (CountGridOrders() < _settings.MaxOrders && extendFrom.Count > 0) {
+        if (extendFrom.Count == 0)
+            extendFrom.Add(_settings.AnchorPrice);
+
+        while (CountGridOrders() < _settings.MaxOrders) {
             double price = _planner.NextPendingPrice(extendFrom);
 
             if (!PlacePendingOrder(price))
@@ -116,7 +136,16 @@ public class GridOrderExecutor {
         if (IsGridOrder(args.PendingOrder.SymbolName, args.PendingOrder.Label))
             RecordEntry(args.Position, args.PendingOrder.OrderType.ToString());
 
-        EnforcePositionLimit();
+        MaintainGrid();
+    }
+
+    // A cancelled, expired or rejected pending order leaves the grid short of N.
+    private void OnPendingOrderCancelled(PendingOrderCancelledEventArgs args) {
+        // Orders pulled by the position-difference cap stay off the book until the cap clears.
+        if (args?.PendingOrder == null || _isWithdrawnByPositionLimit || !IsGridOrder(args.PendingOrder.SymbolName, args.PendingOrder.Label))
+            return;
+
+        MaintainGrid();
     }
 
     private void OnPositionClosed(PositionClosedEventArgs args) {
@@ -126,17 +155,13 @@ public class GridOrderExecutor {
         if (IsGridOrder(args.Position.SymbolName, args.Position.Label))
             HandleOwnPositionClosed(args);
 
-        EnforcePositionLimit();
+        MaintainGrid();
     }
 
     private void HandleOwnPositionClosed(PositionClosedEventArgs args) {
         RecordClose(args);
 
-        // Only a take profit refills the grid. A manual close or a stop-out means the trader or the
-        // broker is shrinking the grid, and refilling would fight that.
-        if (args.Reason != PositionCloseReason.TakeProfit)
-            return;
-
+        // Every close refills, whatever the reason: take profit, manual close or stop-out.
         // The closed order still counts as part of the grid's reach, so the refill lands beyond it
         // when it was the farthest order.
         List<double> extendFrom = GridPrices();
@@ -144,26 +169,16 @@ public class GridOrderExecutor {
         TopUp(extendFrom);
     }
 
-    // At the cap, pull every pending order so this side cannot take on another position. Below it,
-    // put back what was pulled: TopUp extends beyond the farthest position, which is where the
-    // withdrawn orders sat.
-    private void EnforcePositionLimit() {
-        if (IsPositionLimitReached()) {
-            if (!_isWithdrawnByPositionLimit)
-                _robot.Print("*****Position limit reached | Grid: {0}, Positions: {1}, Opposite: {2}, Max difference: {3}. Withdrawing pending orders.",
-                    _settings.Label, GridPositions().Count(), OppositePositions().Count(), _settings.MaxPositionDifference);
-
-            _isWithdrawnByPositionLimit = true;
-            CancelGridPendingOrders();
-            return;
-        }
-
+    // At the cap, pull every pending order so this side cannot take on another position. Once the
+    // difference drops, MaintainGrid puts them back: TopUp extends beyond the farthest position,
+    // which is where the withdrawn orders sat.
+    private void WithdrawForPositionLimit() {
         if (!_isWithdrawnByPositionLimit)
-            return;
+            _robot.Print("*****Position limit reached | Grid: {0}, Positions: {1}, Opposite: {2}, Max difference: {3}. Withdrawing pending orders.",
+                _settings.Label, GridPositions().Count(), OppositePositions().Count(), _settings.MaxPositionDifference);
 
-        _isWithdrawnByPositionLimit = false;
-        _robot.Print("*****Position limit cleared | Grid: {0}. Restoring pending orders.", _settings.Label);
-        TopUp(GridPrices());
+        _isWithdrawnByPositionLimit = true;
+        CancelGridPendingOrders();
     }
 
     private bool IsPositionLimitReached() {
