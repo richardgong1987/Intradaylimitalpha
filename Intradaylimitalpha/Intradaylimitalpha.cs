@@ -12,6 +12,9 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
+    [Parameter("最大总订单数", DefaultValue = 20, MinValue = 0)]
+    public int MaxPositionsCount { get; set; }
+
     [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
     public double LongAnchorPrice { get; set; }
 
@@ -101,7 +104,8 @@ public class Intradaylimitalpha : Robot {
     private List<GridSettingsModel> AllGridSettings() {
         return new List<GridSettingsModel> {
             GridSettings(TradeDirectionModel.Long, LongAnchorPrice, LongSpacingPips, LongLotsPerOrder, LongMaxOrders, LongTakeProfitPips),
-            GridSettings(TradeDirectionModel.Short, ShortAnchorPrice, ShortSpacingPips, ShortLotsPerOrder, ShortMaxOrders, ShortTakeProfitPips)
+            GridSettings(TradeDirectionModel.Short, ShortAnchorPrice, ShortSpacingPips, ShortLotsPerOrder, ShortMaxOrders,
+                ShortTakeProfitPips)
         };
     }
 
