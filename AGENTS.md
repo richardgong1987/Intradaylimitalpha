@@ -4,13 +4,11 @@
 
 This is a cTrader cBot project named `Intradaylimitalpha`.
 
-The strategy runs up to six independent take-profit grids on the same symbol: long groups 1–3
-and short groups 1–3, each with its own parameters and its own order label. Group 1 uses
-`{OrderLabel}_Long` / `{OrderLabel}_Short`; groups 2 and 3 append their number
-(`{OrderLabel}_Long2`, `{OrderLabel}_Short3`). A group runs only when its start price is set
-(above 0); starting with it at 0 cancels that group's pending orders but keeps its filled
-positions. There is no entry signal and no stop-loss calculation. Running long and short groups
-at once needs a hedging account.
+The strategy runs two independent take-profit grids on the same symbol, a long group and a short
+group, each with its own parameters and its own order label (`{OrderLabel}_Long` /
+`{OrderLabel}_Short`). A group runs only when its start price is set (above 0); starting with it
+at 0 cancels that group's pending orders but keeps its filled positions. There is no entry signal
+and no stop-loss calculation. Running both at once needs a hedging account.
 
 Each grid works as follows:
 
@@ -27,8 +25,7 @@ Each grid works as follows:
 
 ## Parameters
 
-Each group has the same set, prefixed `Long` (多单组1), `Short` (空单组1), `Long2` (多单组2),
-`Short2` (空单组2), `Long3` (多单组3) or `Short3` (空单组3):
+Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
 
 | Parameter | Meaning | Min |
 | --- | --- | --- |

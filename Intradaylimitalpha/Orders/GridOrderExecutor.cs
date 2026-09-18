@@ -127,7 +127,7 @@ public class GridOrderExecutor {
     private void RecordEntry(Position position, string orderKind) {
         double entryEquity = _robot.Account.Equity;
         _positionEntryEquities[position.Id] = entryEquity;
-        _csvLogger.AppendEntry(position, _settings.GroupName, orderKind, entryEquity, _robot.SymbolName,
+        _csvLogger.AppendEntry(position, _settings.Direction.ToString(), orderKind, entryEquity, _robot.SymbolName,
             _robot.TimeFrame.ToString());
     }
 

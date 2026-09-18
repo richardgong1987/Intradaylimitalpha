@@ -43,16 +43,16 @@ public class TradeCsvLogger {
     public string FilePath => _filePath;
 
     // The grid has no stop loss, so the stop and risk columns stay 0. The header is unchanged so
-    // existing files and report scripts keep reading it: 关键位 holds the grid group ("Long", "Long2")
+    // existing files and report scripts keep reading it: 关键位 holds the grid direction (Long / Short)
     // and 信号 how the order entered (Limit / Stop).
-    public string AppendEntry(Position position, string groupName, string orderKind, double entryAccountEquity, string symbolName,
+    public string AppendEntry(Position position, string direction, string orderKind, double entryAccountEquity, string symbolName,
         string timeFrame) {
         if (position == null)
             return "";
 
         var record = new TradeCsvRecordModel {
             Id = position.Id.ToString(),
-            KeyLevel = groupName,
+            KeyLevel = direction,
             Signal = orderKind,
             Comment = "ENTRY",
             Symbol = symbolName,
