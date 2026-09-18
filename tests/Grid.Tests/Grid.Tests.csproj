@@ -13,6 +13,7 @@
   <!-- Link the pure source files instead of referencing the cBot project, so tests never pull in cAlgo.API. -->
   <ItemGroup>
     <Compile Include="../../Intradaylimitalpha/Orders/GridPlanner.cs" Link="Linked/GridPlanner.cs" />
+    <Compile Include="../../Intradaylimitalpha/Orders/PositionLimitRule.cs" Link="Linked/PositionLimitRule.cs" />
     <Compile Include="../../Intradaylimitalpha/Models/TradeDirectionModel.cs" Link="Linked/TradeDirectionModel.cs" />
     <Compile Include="../../Intradaylimitalpha/Models/PendingOrderTypeModel.cs" Link="Linked/PendingOrderTypeModel.cs" />
   </ItemGroup>

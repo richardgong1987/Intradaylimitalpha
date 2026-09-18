@@ -8,7 +8,9 @@ namespace cAlgo.Robots;
 // Places and maintains the grid's cTrader orders. It builds the initial grid, and whenever a
 // grid position takes profit it adds pending orders beyond the farthest order until open
 // positions plus pending orders are back at N. It also writes each fill and close to the CSV.
-// All price geometry lives in GridPlanner.
+// While this side's positions outnumber the opposite side's by the configured cap, its pending
+// orders are withdrawn, and they come back once the difference drops. All price geometry lives in
+// GridPlanner.
 public class GridOrderExecutor {
     private readonly Robot _robot;
     private readonly GridSettingsModel _settings;
@@ -16,6 +18,9 @@ public class GridOrderExecutor {
     private readonly TradeCsvLogger _csvLogger;
 
     private readonly Dictionary<int, double> _positionEntryEquities = new();
+
+    // Set while the position-difference cap holds this grid's pending orders off the book.
+    private bool _isWithdrawnByPositionLimit;
 
     public GridOrderExecutor(Robot robot, GridSettingsModel settings, GridPlanner planner, TradeCsvLogger csvLogger) {
         _robot = robot;
@@ -45,6 +50,7 @@ public class GridOrderExecutor {
             _robot.Print("*****Existing grid orders found | Label: {0}, Count: {1}. Continuing that grid instead of building a new one.",
                 _settings.Label, existingOrders);
             TopUp(GridPrices());
+            EnforcePositionLimit();
             return;
         }
 
@@ -62,6 +68,9 @@ public class GridOrderExecutor {
     // prices the new orders are measured from; each placed order joins it, so the next one goes
     // one spacing further.
     private void TopUp(List<double> extendFrom) {
+        if (IsPositionLimitReached())
+            return;
+
         while (CountGridOrders() < _settings.MaxOrders && extendFrom.Count > 0) {
             double price = _planner.NextPendingPrice(extendFrom);
 
@@ -99,17 +108,28 @@ public class GridOrderExecutor {
         return true;
     }
 
+    // Fills and closes on the opposite grid matter too: they move the long/short difference.
     private void OnPendingOrderFilled(PendingOrderFilledEventArgs args) {
-        if (args?.Position == null || !IsGridOrder(args.PendingOrder.SymbolName, args.PendingOrder.Label))
+        if (args?.Position == null || !IsGridPairOrder(args.PendingOrder.SymbolName, args.PendingOrder.Label))
             return;
 
-        RecordEntry(args.Position, args.PendingOrder.OrderType.ToString());
+        if (IsGridOrder(args.PendingOrder.SymbolName, args.PendingOrder.Label))
+            RecordEntry(args.Position, args.PendingOrder.OrderType.ToString());
+
+        EnforcePositionLimit();
     }
 
     private void OnPositionClosed(PositionClosedEventArgs args) {
-        if (args?.Position == null || !IsGridOrder(args.Position.SymbolName, args.Position.Label))
+        if (args?.Position == null || !IsGridPairOrder(args.Position.SymbolName, args.Position.Label))
             return;
 
+        if (IsGridOrder(args.Position.SymbolName, args.Position.Label))
+            HandleOwnPositionClosed(args);
+
+        EnforcePositionLimit();
+    }
+
+    private void HandleOwnPositionClosed(PositionClosedEventArgs args) {
         RecordClose(args);
 
         // Only a take profit refills the grid. A manual close or a stop-out means the trader or the
@@ -122,6 +142,42 @@ public class GridOrderExecutor {
         List<double> extendFrom = GridPrices();
         extendFrom.Add(args.Position.EntryPrice);
         TopUp(extendFrom);
+    }
+
+    // At the cap, pull every pending order so this side cannot take on another position. Below it,
+    // put back what was pulled: TopUp extends beyond the farthest position, which is where the
+    // withdrawn orders sat.
+    private void EnforcePositionLimit() {
+        if (IsPositionLimitReached()) {
+            if (!_isWithdrawnByPositionLimit)
+                _robot.Print("*****Position limit reached | Grid: {0}, Positions: {1}, Opposite: {2}, Max difference: {3}. Withdrawing pending orders.",
+                    _settings.Label, GridPositions().Count(), OppositePositions().Count(), _settings.MaxPositionDifference);
+
+            _isWithdrawnByPositionLimit = true;
+            CancelGridPendingOrders();
+            return;
+        }
+
+        if (!_isWithdrawnByPositionLimit)
+            return;
+
+        _isWithdrawnByPositionLimit = false;
+        _robot.Print("*****Position limit cleared | Grid: {0}. Restoring pending orders.", _settings.Label);
+        TopUp(GridPrices());
+    }
+
+    private bool IsPositionLimitReached() {
+        return PositionLimitRule.IsReached(GridPositions().Count(), OppositePositions().Count(), _settings.MaxPositionDifference);
+    }
+
+    private void CancelGridPendingOrders() {
+        foreach (PendingOrder order in GridPendingOrders().ToList()) {
+            TradeResult result = _robot.CancelPendingOrder(order);
+
+            if (!result.IsSuccessful)
+                _robot.Print("*****Pending order cancel failed | Grid: {0}, Price: {1}, Error: {2}", _settings.Label, order.TargetPrice,
+                    result.Error);
+        }
     }
 
     private void RecordEntry(Position position, string orderKind) {
@@ -162,8 +218,17 @@ public class GridOrderExecutor {
         return _robot.PendingOrders.Where(order => IsGridOrder(order.SymbolName, order.Label));
     }
 
+    private IEnumerable<Position> OppositePositions() {
+        return _robot.Positions.Where(position => position.SymbolName == _robot.SymbolName && position.Label == _settings.OppositeLabel);
+    }
+
     private bool IsGridOrder(string symbolName, string label) {
         return symbolName == _robot.SymbolName && label == _settings.Label;
+    }
+
+    // This grid or the opposite one.
+    private bool IsGridPairOrder(string symbolName, string label) {
+        return symbolName == _robot.SymbolName && (label == _settings.Label || label == _settings.OppositeLabel);
     }
 
     // The side of the book a new order would trade against: longs buy at the ask, shorts sell at the bid.

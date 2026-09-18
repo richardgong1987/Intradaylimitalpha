@@ -35,6 +35,12 @@ Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
 | `…MaxOrders` | N, this group's positions + pending orders | 1 |
 | `…TakeProfitPips` | Distance from entry to take profit | 10 |
 
+Shared by both groups:
+
+| Parameter | Meaning | Min |
+| --- | --- | --- |
+| `MaxPositionsCount` | Cap on the absolute difference between long and short positions; 0 = no cap. At the cap the heavier side's pending orders are cancelled, and restored once the difference drops | 0 |
+
 ## Important user preferences
 
 * Write code comments in English.
@@ -50,7 +56,8 @@ Each group has the same set, prefixed `Long` (多单组) or `Short` (空单组):
   order volume, creates the services, starts the grid.
 * `Orders/GridPlanner.cs`: pure grid price geometry, unit tested in `tests/Grid.Tests`.
 * `Orders/GridOrderExecutor.cs`: places limit/stop orders, keeps the grid at `N`,
-  refills on take profit, writes CSV records.
+  refills on take profit, enforces the position-difference cap, writes CSV records.
+* `Orders/PositionLimitRule.cs`: pure check for the position-difference cap, unit tested.
 * `OrderLogger/TradeCsvLogger.cs`, `OrderLogger/TradeCsvMigrator.cs`: CSV output and header upgrades.
 * `Models/`: plain data types and enums.
 

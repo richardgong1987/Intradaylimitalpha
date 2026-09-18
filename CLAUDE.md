@@ -20,6 +20,10 @@ Each grid (one `GridOrderExecutor` per enabled group) works like this:
   does not refill the gap). Manual closes and stop-outs do not refill.
 - On restart, existing orders with the same label are continued (topped up to `N`) instead
   of building a second grid.
+- `MaxPositionsCount` caps `|long positions - short positions|` (0 = no cap). When one side's
+  positions exceed the other's by the cap, that side's pending orders are cancelled; once the
+  difference drops, they are placed again beyond its farthest position. A price gap that fills
+  several orders at once can overshoot the cap briefly.
 
 `Intradaylimitalpha.cs` is the Robot lifecycle shell that wires the pieces together (the
 composition root).
@@ -31,7 +35,8 @@ Behavior classes live beside the feature they serve; all data types live in `Mod
 
 - `Orders/` — `GridPlanner` (pure price geometry: initial levels, refill price, limit vs
   stop; unit tested); `GridOrderExecutor` places orders, counts live grid orders, refills on
-  take profit, and writes the CSV.
+  take profit, enforces the position-difference cap, and writes the CSV; `PositionLimitRule`
+  (pure, unit tested) decides when the cap is reached.
 - `OrderLogger/` — `TradeCsvLogger` (append-only trade CSV) and `TradeCsvMigrator` (upgrades
   old CSV headers).
 - `Models/` — data types: `GridSettingsModel`, `TradeDirectionModel`,

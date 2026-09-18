@@ -12,7 +12,8 @@ public class Intradaylimitalpha : Robot {
     [Parameter("订单标签", DefaultValue = "Intradaylimitalpha-label")]
     public string OrderLabel { get; set; }
 
-    [Parameter("最大总订单数", DefaultValue = 20, MinValue = 0)]
+    // Cap on |long positions - short positions|, enforced by GridOrderExecutor through PositionLimitRule.
+    [Parameter("最大总订单数 (多空持仓差, 0=不限制)", DefaultValue = 20, MinValue = 0)]
     public int MaxPositionsCount { get; set; }
 
     [Parameter("多单挂单起始价 (0=不开启)", DefaultValue = 0, MinValue = 0, Group = "多单组")]
@@ -113,15 +114,23 @@ public class Intradaylimitalpha : Robot {
     // count, refill and restart independently even though they share one symbol.
     private GridSettingsModel GridSettings(TradeDirectionModel direction, double anchorPrice, double spacingPips, double lotsPerOrder,
         int maxOrders, double takeProfitPips) {
+        TradeDirectionModel oppositeDirection = direction == TradeDirectionModel.Long ? TradeDirectionModel.Short : TradeDirectionModel.Long;
+
         return new GridSettingsModel {
-            Label = $"{OrderLabel.Trim()}_{direction}",
+            Label = GridLabel(direction),
+            OppositeLabel = GridLabel(oppositeDirection),
             Direction = direction,
             AnchorPrice = anchorPrice,
             SpacingPips = spacingPips,
             VolumeInUnits = ToVolumeInUnits(lotsPerOrder),
             MaxOrders = maxOrders,
-            TakeProfitPips = takeProfitPips
+            TakeProfitPips = takeProfitPips,
+            MaxPositionDifference = MaxPositionsCount
         };
+    }
+
+    private string GridLabel(TradeDirectionModel direction) {
+        return $"{OrderLabel.Trim()}_{direction}";
     }
 
     // Switching a group off (start price 0) withdraws its unfilled orders from an earlier run. Filled
